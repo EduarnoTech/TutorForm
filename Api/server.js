@@ -25,7 +25,7 @@ app.use(express.json());
 app.use('/tutor',regForm);
 
 
-app.use('/upload',express.static('uploads/up1'));
+// app.use('/upload',express.static('uploads/up1'));
 
 
 const PORT =process.env.PORT||5000;

@@ -15,7 +15,7 @@ const Multer = multer();
 
 // Saving Tutor
 
-router.route("/tutor_save").post(
+router.post("/tutor_save",
   upload2.fields([
     { name: "panFile", maxCount: 4 },
     { name: "highestDegreeFile", maxCount: 4 },
@@ -253,7 +253,7 @@ router.route("/tutor_save").post(
 
 // Email exist in database or not
 
-router.route("/email_check").post(async (req, res) => {
+router.post("/email_check",async (req, res) => {
     const emailCheck = await Tutor_Form1.findOne({ email: req.body.email });
   
     try {
@@ -276,7 +276,7 @@ router.route("/email_check").post(async (req, res) => {
 
 //   get form_data through tutorId 
 
-router.route("/find_tutorId").get(async (req, res) => {
+router.get("/find_tutorId",async (req, res) => {
     const tutorForm_object = await Tutor_Form1.find({});
   
     try {
@@ -300,7 +300,7 @@ router.route("/find_tutorId").get(async (req, res) => {
 
 //   getting information for dropdowns
 
-router.route("/info").get(async (req, res) => {
+router.get("/info",async (req, res) => {
     const getInfo = await info.findOne({ key: "one" });
     try {
       console.log({ getInfo });

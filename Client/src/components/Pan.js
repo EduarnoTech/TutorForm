@@ -10,6 +10,11 @@ const RegistrationForm = (props) => {
   const [skill, setSkill] = useState([]);
   const [otherSkill, setOtherSkill] = useState("");
   const [bestSub, setBestSub] = useState([]);
+  const [checkPanName,setCheckPanName]=useState(true);
+  const [checkPanNumber,setCheckPanNumber]=useState(true);
+  const [checkPanFile,setCheckPanFile]=useState(true);
+  const [validPanNo,setValidPanNo]=useState(true)
+  
   const history = useHistory();
   // const [data, setData] = useState({
   //   panName:"",
@@ -22,6 +27,9 @@ const RegistrationForm = (props) => {
   // } = data;
   console.log(props.data);
   const handleChange = (e) => {
+    setCheckPanName(true);
+    setCheckPanNumber(true);
+    setValidPanNo(true)
     props.setData({
       ...props.data,
       [e.target.name]: e.target.value,
@@ -29,6 +37,7 @@ const RegistrationForm = (props) => {
   };
 
   const handleFiles = (e) => {
+    setCheckPanFile(true)
     let mfiles = e.target.files;
 
     let formdata1 = [];
@@ -49,21 +58,33 @@ const RegistrationForm = (props) => {
 
   const handleNext = (e) => {
     e.preventDefault();
-    if (
-      props.panName.length > 0 &&
-      props.panNumber.length > 0 &&
-      props.panFile.length > 0
-    ) {
-      let regex = /^([a-zA-Z]){5}([0-9]){4}([a-zA-Z]){1}?$/;
+    // if (
+    //   props.panName.length > 0 &&
+    //   props.panNumber.length > 0 &&
+    //   props.panFile.length > 0
+    // ) {
+      if( props.panName.length === 0){
+        setCheckPanName(false);
+      }
+      else if(props.panNumber.length===0){
+        setCheckPanNumber(false);
+      }
+      else if(props.panFile.length===0){
+        setCheckPanFile(false)
+      }
+     else{ 
+       let regex = /^([a-zA-Z]){5}([0-9]){4}([a-zA-Z]){1}?$/;
 
       if (regex.test(props.panNumber)) {
         history.replace("/accountDetails");
       } else {
-        alert("Please Enter a Valid Pan Number");
+        // alert("Please Enter a Valid Pan Number");
+        setValidPanNo(false)
       }
-    } else {
-      alert("please fill all the required feilds*");
     }
+    // } else {
+    //   alert("please fill all the required feilds*");
+    // }
   };
 
   return (
@@ -87,6 +108,7 @@ const RegistrationForm = (props) => {
                 placeholder="Full Name (As per your PAN Card) *"
                 required
               />
+              {!checkPanName && <p style={{color:"red" ,marginTop:"-30px",marginBottom:"20px"}}>Please enter name same as in Pan card</p>}
 
               <input
                 type="text"
@@ -98,6 +120,8 @@ const RegistrationForm = (props) => {
                 required
                 multiple
               />
+               {!checkPanNumber && <p style={{color:"red" ,marginTop:"-30px",marginBottom:"20px"}}>Please enter Pan card number</p>}
+               {!validPanNo && <p style={{color:"red" ,marginTop:"-30px",marginBottom:"20px"}}>Please enter a valid pan number</p>}
 
               <input
                 type="file"
@@ -109,6 +133,8 @@ const RegistrationForm = (props) => {
                 multiple
                 required
               />
+
+            {!checkPanFile && <p style={{color:"red" ,marginTop:"-30px"}}>Please add file</p>}  
             </div>
             {/* <div className='form-check'>
               <label for='agree-term' className='label-agree-term'>

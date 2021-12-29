@@ -10,6 +10,7 @@ import Input, {
   getCountryCallingCode,
 } from "react-phone-number-input/input";
 import Autocomplete from "./Autocomplete";
+import { red } from "@material-ui/core/colors";
 
 const RegistrationForm = (props) => {
   const [branches, setBranches] = useState();
@@ -24,10 +25,18 @@ const RegistrationForm = (props) => {
   const history = useHistory();
   const [display, setDisplay] = useState(false);
   const [skillChange, setSkillChange] = useState("");
-  const [countryVal, setCountryVal] = useState("+(91)");  
+  const [countryVal, setCountryVal] = useState("+(91)");
   const [check, setCheck] = useState(true);
-  
-
+  const [waValidation, setWaValidation] = useState(true);
+  const [checkEmail,setCheckEmail]=useState(true);
+  const [validEmail,setValidEmail]=useState(true);
+  const [checkUsername,setCheckUsername]=useState(true);
+  const [checkHighestDegree,setCheckHighestDegree]=useState(true);
+  const [checkUniversity,setCheckUniversity]=useState(true);
+  const [checkSkills,setCheckSkills]=useState(true);
+  const [checkBestSubjects,setCheckBestSubjects]=useState(true);
+  const [checkWhatapp,setCheckWhatapp]=useState(true);
+  const [checkHighestDegreeFile,setCheckHighestDegreeFile]=useState(true);
   // const [data, props.setData] = useState({
   //   email: '',
   //   name: '',
@@ -57,45 +66,87 @@ const RegistrationForm = (props) => {
   // } = data;
   // console.log(props.data);
   const handleChange = (e) => {
+    setCheckEmail(true);
+    setValidEmail(true);
+    setCheckUsername(true)
+    setCheckUniversity(true)
     props.setData({
       ...props.data,
       [e.target.name]: e.target.value,
     });
   };
 
+  useEffect(() => {
+    setCheck(true);
+  }, []);
 
-useEffect(()=>{
-  setCheck(true)
-},[])
-
-
-
-
-  const handleWhatsapp = (e) => {
+  const handleWhatsapp = async (e) => {
+    setCheckWhatapp(true)
     const re = /^[0-9\b]+$/; //rules
-    if (  e.target.value === "" || re.test(e.target.value)) {
+    if (e.target.value === "" || re.test(e.target.value)) {
       props.setData({
         ...props.data,
         whatsapp_no: e.target.value,
       });
-      // if(check){
-        // props.setData({
-        //   ...props.data,
-        //   phone_no: e.target.value,
-        // });
-      
+    //   let wa_num = e.target.value;
+    //   console.log({ length: wa_num.length });
+    //   if (wa_num.length === 10) {
+    //     const payload = {
+    //       blocking: "wait",
+    //       contacts: ["+91" + wa_num],
+    //       force_check: true,
+    //     };
+    //     const wa_valid = await axios.post(
+    //       "https://waba.360dialog.io/v1/contacts",
+    //       payload,
+    //       {
+    //         headers: {
+    //           "Content-Type": "application/json",
+    //           "D360-API-KEY": "JMjJNtiGmSiet1O9OXJOExGhAK",
+    //         },
+    //       }
+    //     );
+
+    //     if (wa_valid?.data.contacts[0]?.status === "valid") {
+    //       setWaValidation(true);
+    //     } else {
+    //       setWaValidation(false);
+    //     }
+    //   }
     }
-    // else if(check && e.target.value === "" || re.test(e.target.value)){
-    //   props.setData({
-    //     ...props.data,
-    //     whatsapp_no: e.target.value,
-    //     phone_no: e.target.value,
-    //   });
-    // }
   };
+  useEffect(async() => {
+    if(props.whatsapp_no.length===10){
+      let countryVall=countryVal+ props.whatsapp_no;
+      console.log({countryVal:countryVall})
+      const payload = {
+        blocking: "wait",
+        contacts: [ countryVal+ props.whatsapp_no],
+        force_check: true,
+      };
+      const wa_valid = await axios.post(
+        "https://waba.360dialog.io/v1/contacts",
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "D360-API-KEY": "JMjJNtiGmSiet1O9OXJOExGhAK",
+          },
+        }
+      );
 
-  
-
+      if (wa_valid?.data.contacts[0]?.status === "valid") {
+        
+        setWaValidation(true);
+      } else {
+        setWaValidation(false);
+      }
+    }
+    else if(props.whatsapp_no.length===0){
+      setWaValidation(true);
+    }
+ 
+  }, [props.whatsapp_no]);
 
   const handlePhone = (e) => {
     const re = /^[0-9\b]+$/; //rules
@@ -108,6 +159,7 @@ useEffect(()=>{
   };
 
   const handleDegreeChange = (e) => {
+    setCheckHighestDegree(true)
     props.setData({
       ...props.data,
       [e.target.name]: e.target.value,
@@ -121,6 +173,7 @@ useEffect(()=>{
     });
   };
   const handleSetSkills = (i) => {
+    setCheckSkills(true)
     // const newSkill = skill.filter((i) => i === e.target.value);
     const newSkill = skill.filter((j) => j === i);
     if (newSkill.length === 0 && skill.length < 20) {
@@ -160,15 +213,16 @@ useEffect(()=>{
   };
 
   const handleSkillChange = (e) => {
-
+    setCheckSkills(true)
     let newSkill2 = e.target.value;
     let newSkill1 = newSkill2.toLowerCase();
     setSkillChange(newSkill1);
-  
+
     setDisplay(true);
   };
 
   const handleBestSub = (e) => {
+    setCheckBestSubjects(true)
     const filter = bestSub.filter((i) => i === e.target.value);
     if (filter.length === 0 && bestSub.length < 5) {
       setBestSub([...bestSub, e.target.value]);
@@ -200,33 +254,66 @@ useEffect(()=>{
         { email: props.email }
       );
       console.log({ email: EmailValid.data.success });
-      if (EmailValid.data.success===true) {
+    if (EmailValid.data.success === true) {
         // console.log({ skills: props.skills, branch: props.branch });
-        if (
-          props.username.length > 0 &&
-          // props.branch.length > 0 &&
-          props.highest_degree.length > 0 &&
-          props.university.length > 0 &&
-          props.skills.length > 0 &&
-          props.best_subjects.length > 0 &&
-          props.whatsapp_no.length > 0 &&
-          props.highestDegreeFile.length > 0
-        ) {
-          history.replace("/PAN_Card_Check");
-        } else {
-          console.log("please fill all the feilds");
-          alert("Please fill in all *required fields properly");
-        }
-      } else {
-        alert("Email already exists");
-        props.setData({ ...props.data, email: "" });
+      //   if (
+      //     props.username.length > 0 &&
+      //     // props.branch.length > 0 &&
+      //     props.highest_degree.length > 0 &&
+      //     props.university.length > 0 &&
+      //     props.skills.length > 0 &&
+      //     props.best_subjects.length > 0 &&
+      //     props.whatsapp_no.length > 0 &&
+      //     props.highestDegreeFile.length > 0
+      //   ) {
+      //     history.replace("/PAN_Card_Check");
+      //   } else {
+      //     console.log("please fill all the feilds");
+      //     alert("Please fill in all *required fields properly");
+      //   }
+      // } else {
+      //   alert("Email already exists");
+      //   props.setData({ ...props.data, email: "" });
+      // }
+      if( props.username.length === 0){
+        console.log({check:"username"})
+        setCheckUsername(false)
       }
+      else if( props.highest_degree.length === 0){
+        setCheckHighestDegree(false)
+      }
+      else if( props.university.length === 0){
+        setCheckUniversity(false)
+      }
+      else if( props.skills.length ===0){
+        setCheckSkills(false);
+      }
+      else if( props.best_subjects.length===0){
+        setCheckBestSubjects(false)
+      }
+      else if( props.whatsapp_no.length===0){
+        setCheckWhatapp(false);
+      }
+      else if(props.highestDegreeFile.length===0){
+        setCheckHighestDegreeFile(false);
+      }
+      else{
+        history.replace("/PAN_Card_Check");
+      }
+
     } else {
-      alert("Email feild is empty");
+      // alert("Email exists");
+      setValidEmail(false)
     }
+  }
+  else{
+    // alert ("please enter the email")
+    setCheckEmail(false)
+  }
   };
 
   const handleFile = (e) => {
+    setCheckHighestDegreeFile(true)
     let mfiles = e.target.files;
     setFile1(mfiles);
     let formdata1 = [];
@@ -304,16 +391,15 @@ useEffect(()=>{
   //   }
   // };
   useEffect(() => {
+    setCheck(true);
 
-    setCheck(true)
-  
     const getDropdownData = async (req, res) => {
       try {
         const res = await axios({
           method: "get",
           url: "http://localhost:8800/tutor/info",
         });
-        // console.log({ branch: res.data.getInfo.branch });
+        // console.log({ branch: res.data.getInfo});
         setBranches(res.data.getInfo.branch);
         setSubjects(res.data.getInfo.skills);
         setSoftwareSkill(res.data.getInfo.software_skills);
@@ -346,24 +432,22 @@ useEffect(()=>{
   //   );
   // }
 
-  const countryHandler=(e)=>{
-    let val=e.target.value;
+  const countryHandler = (e) => {
+    let val = e.target.value;
     // let val1=en.val
     // console.log({vaaaaaaal:val1})
     // let ind=val1.indexOf('+')
     // let countryCode=val.substring(0,ind)
 
-    let val1=getCountryCallingCode(val);
-    let countryCode='+'+'('+val1+')';
+    let val1 = getCountryCallingCode(val);
+    let countryCode = "+" + "(" + val1 + ")";
     // console.log({vaaaaaaal:countryCode})
-    setCountryVal(countryCode)
-    let insVal= `${en[val]} +${getCountryCallingCode(val)}`
-    props.setInsCountryVal(insVal)
-  }
+    setCountryVal(countryCode);
+    let insVal = `${en[val]} +${getCountryCallingCode(val)}`;
+    props.setInsCountryVal(insVal);
+  };
 
-
-
-  const handleCheck=()=>{
+  const handleCheck = () => {
     // console.log({check1:check})
     setCheck(!check);
     // console.log({check})
@@ -373,8 +457,7 @@ useEffect(()=>{
     // else{
     //   setCheckVal(false)
     // }
-    
-  }
+  };
   // console.log({check})
 
   useEffect(() => {
@@ -397,6 +480,7 @@ useEffect(()=>{
     //   false
     // );
   }, []);
+  // console.log({waValidation:waValidation})
   return (
     <div className="main_container">
       <div className="main">
@@ -425,6 +509,8 @@ useEffect(()=>{
                 placeholder="Email *"
                 required
               />
+               {!checkEmail && <p style={{color:"red" ,marginTop:"-30px",marginBottom:"20px"}}>Please enter email</p>}
+               {!validEmail && <p style={{color:"red" ,marginTop:"-30px",marginBottom:"20px"}}>Please use another email</p>}
               <input
                 type="text"
                 name="username"
@@ -434,6 +520,7 @@ useEffect(()=>{
                 placeholder="Full Name (As per your PAN Card) *"
                 required
               />
+             {!checkUsername && <p style={{color:"red" ,marginTop:"-30px"}}>Please enter username</p>}
               {/* <div className="select-list">
                 <select
                   name="branch"
@@ -509,6 +596,7 @@ useEffect(()=>{
                 staticName="branch"
                 placeholder="Branch/Specialization/Department*"
               />
+              
 
               <div style={{ marginTop: "30px" }} className="select-list">
                 <select
@@ -527,6 +615,7 @@ useEffect(()=>{
                   <option value="phd">Phd</option>
                   <option value="other">Other</option>
                 </select>
+                {!checkHighestDegree && <p style={{color:"red" ,marginTop:"-30px",marginBottom:"20px"}}>Please enter your degree</p>}
                 {props.highest_degree === "other" ? (
                   <input
                     type="text"
@@ -549,6 +638,7 @@ useEffect(()=>{
                 onChange={handleChange}
                 required
               />
+               {!checkUniversity && <p style={{color:"red" ,marginTop:"-30px",marginBottom:"20px"}}>Please enter your college name</p>}
 
               <div
                 className="select-list-skill"
@@ -571,6 +661,7 @@ useEffect(()=>{
                   required
                   autoComplete="off"
                 />
+                 {!checkSkills && <p style={{color:"red" }}>Please enter your subjects</p>}
                 <div>
                   {/* <option selected value="">
                     Skills/Known Subjects (upto 20) *
@@ -677,6 +768,7 @@ useEffect(()=>{
                       .filter((i) => i?.trim() !== "Others")
                       .map((i) => <option value={i}>{i}</option>)}
                 </select>
+                {!checkBestSubjects && <p style={{color:"red"}}>Please enter your best subjects</p>}
                 <div
                   style={{
                     display: "flex",
@@ -773,52 +865,86 @@ useEffect(()=>{
                   ))}
               </div>
 
-
-
-              <div style={{display:"flex",marginTop: "35px"}}>
-                <input type="checkbox" checked={check} onChange={handleCheck} style={{width:"4%",display: "block",alignSelf: "center"}}/>
+              <div style={{ display: "flex", marginTop: "35px" }}>
+                <input
+                  type="checkbox"
+                  checked={check}
+                  onChange={handleCheck}
+                  style={{ width: "4%", display: "block", alignSelf: "center" }}
+                />
                 <p>Whatsapp and phone no. are same.</p>
               </div>
 
+              <div style={{ display: "flex" }}>
+                {/* <select {...rest} value={value} onChange={(event) => onChange(event.target.value || undefined)}> */}
+                <select
+                  value={countryVal}
+                  onChange={(e) => countryHandler(e)}
+                  style={{
+                    width: "20%",
+                    marginBottom: "60px",
+                    marginTop: "28px",
+                    marginRight: "10px",
+                  }}
+                >
+                  <option value="">{countryVal}</option>
+                  {getCountries().map((country) => (
+                    // {console.log({country:country})}
+                    <option key={country} value={country}>
+                      {en[country]} +{getCountryCallingCode(country)}
+                    </option>
+                  ))}
+                </select>
 
-              <div style={{display:"flex"}}>
-              {/* <select {...rest} value={value} onChange={(event) => onChange(event.target.value || undefined)}> */}
-              <select  value={countryVal} onChange={(e)=>countryHandler(e)} style={{width:"20%",marginBottom:"60px",marginTop:"28px",marginRight:"10px"}}>
-                <option value="">{countryVal}</option>
-                {getCountries().map((country) => (
-                  // {console.log({country:country})}
-                  <option key={country} value={country} >
-                    {en[country]} +{getCountryCallingCode(country)}
-                  </option>
-                ))}
-              </select>
+                {!waValidation ? (
+                  
+                  <input
+                    type="text"
+                    style={{
+                      marginTop: "30px",
+                      marginRight: "10px",
+                      borderBottomColor: "red",
+                    }}
+                    pattern="[0-9]*"
+                    name="whatsapp_no"
+                    id="phone_number"
+                    value={props.whatsapp_no}
+                    className="whatsapp_input"
+                    placeholder="Whatsapp No.*"
+                    onChange={handleWhatsapp}
+                    required
+                  />
+            
+                ) : (
+                  <input
+                    type="text"
+                    style={{ marginTop: "30px", marginRight: "10px" }}
+                    pattern="[0-9]*"
+                    name="whatsapp_no"
+                    id="phone_number"
+                    value={props.whatsapp_no}
+                    className="whatsapp_input"
+                    placeholder="Whatsapp No.*"
+                    onChange={handleWhatsapp}
+                    required
+                  />
+                )}
 
-              <input
-                type="text"
-                style={{ marginTop: "30px",marginRight:"10px" }}
-                pattern="[0-9]*"
-                name="whatsapp_no"
-                id="phone_number"
-                value={props.whatsapp_no}
-                className="whatsapp_input"
-                placeholder="Whatsapp No.*"
-                onChange={handleWhatsapp}
-                required
-              />
-
-              <input
-                type="text"
-                style={{ marginTop: "30px",marginRight:"10px" }}
-                pattern="[0-9]*"
-                name="phone_number"
-                id="phone_number"
-                value={check ? props.whatsapp_no : props.phone_no}
-                className="whatsapp_input"
-                placeholder="Phone No.*"
-                onChange={handlePhone}
-                required
-              />
+                <input
+                  type="text"
+                  style={{ marginTop: "30px", marginRight: "10px" }}
+                  pattern="[0-9]*"
+                  name="phone_number"
+                  id="phone_number"
+                  value={check ? props.whatsapp_no : props.phone_no}
+                  className="whatsapp_input"
+                  placeholder="Phone No.*"
+                  onChange={handlePhone}
+                  required
+                />
               </div>
+             {!waValidation && <p style={{color:"red",marginTop: "-60px",marginBottom: "60px"}}>Please enter a valid whatsapp number</p>}
+             {!checkWhatapp && <p style={{color:"red",marginTop: "-60px",marginBottom: "60px"}}>Please enter whatsapp number</p>}
             </div>
             <div>
               <label for="agree-term" className="label-agree-term">
@@ -829,6 +955,7 @@ useEffect(()=>{
                   onChange={(e) => handleFile(e)}
                   multiple
                 ></input>
+                {!checkHighestDegreeFile && <p style={{color:"red",marginTop:"-30px"}}>Please add file</p>}
               </label>
             </div>
             <div className="form-submit row" style={{ display: "flex" }}>

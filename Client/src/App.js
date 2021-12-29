@@ -69,11 +69,13 @@ function App() {
     
     // console.log({lllll:find_tutorId.data.tutorForm_object})
     // console.log("hiiiii",find_tutorId)
-      if(find_tutorId?.data?.tutorForm_object?.length!=0){
-        let tutoId=find_tutorId?.data?.tutorForm_object;
-        let tutId=tutoId[(tutoId.length)-1]?.tutor_id;
-        // console.log({tutId})
-        tutId=tutId?.replace("EDUT","")
+      // if(find_tutorId?.data?.tutorForm_object?.length!=0){
+      //   let tutoId=find_tutorId?.data?.tutorForm_object;
+      //   let tutId=tutoId[(tutoId.length)-1]?.tutor_id;
+      //   // console.log({tutId})
+      console.log({debug_tutorId:find_tutorId})
+        if(find_tutorId?.data?.tutoId && find_tutorId?.data?.success===true){
+        let tutId=find_tutorId?.data?.tutoId?.replace("EDUT","")
         let newId=+tutId+1;
         // console.log({newId})
         let newId2="EDUT"+newId
@@ -82,7 +84,8 @@ function App() {
         
       }
       else{
-        let tutId="EDUT1000101"
+        console.log("entering here in new tut id")
+        let tutId="EDUT100001"
         setTutorId(tutId)
         // console.log({tutId})
     }
@@ -94,7 +97,7 @@ function App() {
   let formdata=new FormData()
 
   const tutor_reg = async () => {
-    // console.log({tutorId:tutorId})
+    console.log({tutorId:tutorId})
     formdata.append('tutorId',tutorId);
     formdata.append('email',email);
     formdata.append('username',username)
@@ -129,7 +132,7 @@ function App() {
 
 
     const tutorSave = await axios.post(
-      "http://localhost:8800/tutor/tutor_save",formdata
+      "http://localhost:8800/tutor/detailed_tutor_save",formdata
       
     );
       if(tutorSave.data.success==true){

@@ -2,7 +2,8 @@ const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 const { file } = require("googleapis/build/src/apis/file");
-const Tutor_Form1 = require("../models/TutorForm1.js");
+const Detailed_tutorForm1 = require("../models/Detailed_tutorForm1.js");
+const Tutor_Schema = require("../models/Tutorschema.js");
 const info = require("../models/info");
 const axios = require("axios");
 const base64 = require("base-64");
@@ -15,14 +16,14 @@ const Multer = multer();
 
 // Saving Tutor
 
-router.post("/tutor_save",
+router.post("/detailed_tutor_save",
   upload2.fields([
     { name: "panFile", maxCount: 4 },
     { name: "highestDegreeFile", maxCount: 4 },
   ]),
   async (req, res) => {
  
-    const tutorForm1 = new Tutor_Form1({
+    const tutorForm1 = new Detailed_tutorForm1({
       tutor_id: req.body.tutorId,
       email: req.body.email,
       username: req.body.username,
@@ -49,9 +50,39 @@ router.post("/tutor_save",
       // file:req.file.path
     });
 
+    const tutorSchema = new Tutor_Schema({
+      tutor_id: req.body.tutorId,
+      email: req.body.email,
+      name: req.body.username,
+      dept: req.body.branch,
+      highest_degree: req.body.highest_degree,
+      other_degree: req.body.other_degree,
+      academic_info:[],
+      subjects: req.body.skills,
+      software_skills: req.body.software_skills,
+      wa_id: req.body.whatsapp_no,
+      contact_id: req.body.phone_no,
+      Pan_info:{
+        pan_name: req.body.panName,
+        pan_number: req.body.panNumber
+      },
+      Bank:{
+        acc_no:req.body.accNumber,
+        ifsc_code:req.body.ifsc,
+        upi_id:req.body.UPI
+      }
+      
+    });
+
+    tutorSchema.academic_info.push({
+      college: req.body.university,
+      degree:req.body.highest_degree
+    })
+
     try {
       if (req.body.whatsapp_no.length != 0 && req.body.phone_no?.length == 0) {
         tutorForm1.phone_no = req.body.whatsapp_no;
+        tutorSchema.contact_id=req.body.whatsapp_no;
       }
 
       if (req.files) {
@@ -124,6 +155,7 @@ router.post("/tutor_save",
 
             if (razorpayFund_upi.data) {
               tutorForm1.fundId_upi = razorpayFund_upi.data.id;
+              tutorSchema.fund_upi_id = razorpayFund_upi.data.id;
               console.log("Got fundId upi");
             } else {
               console.log("Didn't get fundId upi");
@@ -187,7 +219,10 @@ router.post("/tutor_save",
                     req.body.accName
                   ) {
                     tutorForm1.fundId_bank = fa_id;
+                    tutorSchema.fund_bank_id=fa_id;
+
                     const newV = await tutorForm1.save();
+                    const newV1 = await tutorSchema.save();
                     res.status(200).json({ success: true });
                   } else {
                     res.send({
@@ -237,6 +272,7 @@ router.post("/tutor_save",
         } catch (err) {
           res.send({ success: false, status: "Session_Failed" });
           console.log("error ! Didnt find contact id");
+          console.log({errorr:err})
         }
       }
 
@@ -251,14 +287,17 @@ router.post("/tutor_save",
 
 
 
+
+
 // Email exist in database or not
 
 router.post("/email_check",async (req, res) => {
-    const emailCheck = await Tutor_Form1.findOne({ email: req.body.email });
+    const emailCheckInDetailedTutorform = await Detailed_tutorForm1.findOne({ email: req.body.email });
+    const emailCheckInTutors=await Tutor_Schema.findOne({ email: req.body.email });
   
     try {
-      console.log({ emailCheck });
-      if (emailCheck) {
+      console.log({ emailCheckInDetailedTutorform });
+      if (emailCheckInDetailedTutorform && emailCheckInTutors ) {
         res.status(200).json({ success: false });
         console.log("Email exist");
       } else {
@@ -277,15 +316,16 @@ router.post("/email_check",async (req, res) => {
 //   get form_data through tutorId 
 
 router.get("/find_tutorId",async (req, res) => {
-    const tutorForm_object = await Tutor_Form1.find({});
+    const tutorForm_object = await Tutor_Schema.find({});
   
     try {
       //    console.log({emailCheck})
-      if (tutorForm_object) {
-        res.status(200).json({ tutorForm_object: tutorForm_object });
+      if (tutorForm_object?.length!=0) {
+        let tutoId=tutorForm_object[(tutorForm_object.length)-1]?.tutor_id;
+        res.status(200).json({ tutoId: tutoId,success:true });
         console.log("object is there");
       } else {
-        res.status(400).json({ success: false });
+        res.send({ success: false });
         console.log("objects are not there");
       }
     } catch (err) {

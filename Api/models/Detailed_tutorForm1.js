@@ -4,7 +4,8 @@ const Detailed_tutorForm1=new mongoose.Schema({
         
         tutor_id:{
             type:String,
-            default :null
+            default :null,
+            unique:true
         },    
         email:{
             type:String,
@@ -27,6 +28,10 @@ const Detailed_tutorForm1=new mongoose.Schema({
         },
         // other_skill,
         best_subjects:{
+            type:Array,
+            default :null
+        },
+        tutor_exam:{
             type:Array,
             default :null
         },
@@ -86,6 +91,10 @@ const Detailed_tutorForm1=new mongoose.Schema({
             default:null
         },
         UPI:{
+            type:String,
+            default:null
+        },
+        UPI_Name:{
             type:String,
             default:null
         },
